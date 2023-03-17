@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">BLEScanner</string>
+
+    <string name="mac">MAC: %1$s</string>
+    <string name="rssi">RSSI: %1$d dBm</string>
+    <string name="name">Name: %1$s</string>
+    <string name="distance">Distance: %1$f meters </string>
+
+</resources>

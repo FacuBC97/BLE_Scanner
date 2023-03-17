@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "66168135565",
+    "project_id": "blescanner-dbac0",
+    "storage_bucket": "blescanner-dbac0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66168135565:android:d18e36ad0f7d515ff427c4",
+        "android_client_info": {
+          "package_name": "com.radag.blescanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "66168135565-a2eu15c4iik3pej5sjli48o6n6ac4sj3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaiyipg1JLICnNgxN_Rk04qnc5mZn9-oQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "66168135565-a2eu15c4iik3pej5sjli48o6n6ac4sj3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
