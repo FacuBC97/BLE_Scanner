@@ -14,8 +14,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:layout_margin="5dp"
-             />
+            android:layout_margin="5dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,11 +43,22 @@
                 android:text="@string/rssi" />
 
             <TextView
+                android:id="@+id/beacon_rssiAverage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/rssiAverage" />
+
+            <TextView
                 android:id="@+id/beacon_distance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/distance" />
 
+            <TextView
+                android:id="@+id/lista"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="" />
 
 
         </LinearLayout>

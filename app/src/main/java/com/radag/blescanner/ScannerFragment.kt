@@ -10,20 +10,26 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.ParcelUuid
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 import kotlin.math.pow
+import android.speech.tts.TextToSpeech
+
 
 class ScannerFragment : Fragment() {
 
+    private lateinit var distancia: TextView
     private lateinit var recyclerView: RecyclerView
     private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var textToSpeech: TextToSpeech
 
     private var btManager: BluetoothManager? = null
     private var btAdapter: BluetoothAdapter? = null
@@ -41,6 +47,12 @@ class ScannerFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_scanner, container, false)
         initViews(view)
         setUpBluetoothManager()
+
+        textToSpeech = TextToSpeech(activity) { status ->
+            if (status != TextToSpeech.ERROR) {
+                textToSpeech.language = Locale("pt", "BR")
+            }
+        }
         return view
     }
 
@@ -98,7 +110,12 @@ class ScannerFragment : Fragment() {
         recyclerView.layoutManager = linearLayoutManager
         beaconAdapter = BeaconsAdapter(beaconSet.toList())
         recyclerView.adapter = beaconAdapter
+        distancia = view.findViewById(R.id.distancia)
     }
+
+
+
+
 
     override fun onStart() {
         super.onStart()
@@ -108,11 +125,21 @@ class ScannerFragment : Fragment() {
         btScanner!!.startScan (scanFilters,scanSettings,leScanCallback)
     }
 
+
+    override fun onStop() {
+        super.onStop()
+        btScanner!!.stopScan(leScanCallback)
+    }
+
+
+
     //Configura los filtros de busqueda de dispositivos
     private fun bleFilters(): MutableList<ScanFilter> {
-        val deviceName = "ESP32_BEACON_"
+        val deviceName = "ESP32_BEACON"
+        //val deviceUUID = ParcelUuid.fromString("644F76F7-6A52-42BC-E911-FD902C9BB987")
         val scanFilters = mutableListOf<ScanFilter>()
         val scanFilter = ScanFilter.Builder().setDeviceName(deviceName).build()
+        //val scanFilter = ScanFilter.Builder().setServiceUuid(deviceUUID).build()
         scanFilters.add(scanFilter)
         return scanFilters
     }
@@ -127,6 +154,7 @@ class ScannerFragment : Fragment() {
             .build()
     }
 
+    private val rssiList = mutableListOf<Int>()
 
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -134,18 +162,37 @@ class ScannerFragment : Fragment() {
             val beacon = Beacon()
 
             if (scanRecord != null){
-                beaconSet.clear() //forzado debido a que no encuentro otra manera de actualizar datos
+                beaconSet.clear()
                 beacon.macAddress=result.device.address
                 beacon.deviceName= result.device.name
                 beacon.rssi = result.rssi
-                beacon.distance= distanceCalculator(result.rssi)
+
+                rssiList.add(result.rssi)
+                val maxListSize = 10
+                if (rssiList.size > maxListSize) {
+                    rssiList.removeAt(0)
+                }
+
+                beacon.lista=rssiList
+
+                val rssiAverage = rssiList.average().toInt()
+
+                beacon.rssiAverage = rssiAverage
+                beacon.distance= distanceCalculator(rssiAverage)
+
                 beaconSet.add(beacon)
+
                 (recyclerView.adapter as BeaconsAdapter).updateData(beaconSet.toList())
             }
-            else if (scanRecord == null){
-                Log.e("radagast", "prueba")
-            }
+
+
+            distancia.text = String.format(getString(R.string.distancia),beacon.distance)
+
+            textToSpeech.speak(distancia.text, TextToSpeech.QUEUE_FLUSH, null, null)
+
+
         }
+
 
         //que hacer si el escaneo fallo
         override fun onScanFailed(errorCode: Int) {

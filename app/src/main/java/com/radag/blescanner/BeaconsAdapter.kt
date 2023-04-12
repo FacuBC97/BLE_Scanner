@@ -36,6 +36,9 @@ class BeaconsAdapter(beacons: List<Beacon>) :
         private var rssi: TextView? = null
         private var beaconName: TextView? = null
         private var beaconDistance: TextView? = null
+        private var rssiAverage: TextView? = null
+        private var lista: TextView? = null
+
 
         private val context = parent.context
 
@@ -45,6 +48,11 @@ class BeaconsAdapter(beacons: List<Beacon>) :
             rssi = itemView.findViewById(R.id.beacon_rssi)
             beaconName = itemView.findViewById(R.id.beacon_name)
             beaconDistance = itemView.findViewById(R.id.beacon_distance)
+            rssiAverage = itemView.findViewById(R.id.beacon_rssiAverage)
+            lista = itemView.findViewById(R.id.lista)
+
+
+
         }
 
         fun bind(beacon: Beacon) {
@@ -53,6 +61,10 @@ class BeaconsAdapter(beacons: List<Beacon>) :
             rssi?.text = String.format(context.getString(R.string.rssi),beacon.rssi)
             beaconName?.text = String.format(context.getString(R.string.name),beacon.deviceName)
             beaconDistance?.text = String.format(context.getString(R.string.distance),beacon.distance)
+            rssiAverage?.text = String.format(context.getString(R.string.rssiAverage),beacon.rssiAverage)
+            lista?.text = String.format(beacon.lista.toString())
+
+
         }
     }
 }
