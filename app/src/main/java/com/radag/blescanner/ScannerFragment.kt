@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.ParcelUuid
 import android.util.Log
 import android.view.LayoutInflater
@@ -31,6 +32,7 @@ class ScannerFragment : Fragment() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var textToSpeech: TextToSpeech
 
+    private var handler: Handler? = null
     private var btManager: BluetoothManager? = null
     private var btAdapter: BluetoothAdapter? = null
     private var btScanner: BluetoothLeScanner? = null
@@ -48,11 +50,6 @@ class ScannerFragment : Fragment() {
         initViews(view)
         setUpBluetoothManager()
 
-        textToSpeech = TextToSpeech(activity) { status ->
-            if (status != TextToSpeech.ERROR) {
-                textToSpeech.language = Locale("pt", "BR")
-            }
-        }
         return view
     }
 
@@ -114,32 +111,48 @@ class ScannerFragment : Fragment() {
     }
 
 
-
-
-
     override fun onStart() {
         super.onStart()
         val scanFilters = bleFilters()
         val scanSettings = bleSettings()
-        //btScanner!!.startScan (leScanCallback)
         btScanner!!.startScan (scanFilters,scanSettings,leScanCallback)
-    }
 
+        // Start the handler to execute the text-to-speech function every 10 seconds
+        handler = Handler()
+        handler?.postDelayed(textToSpeechRunnable, 10000)
+
+        textToSpeech = TextToSpeech(activity) { status ->
+            if (status != TextToSpeech.ERROR) {
+                textToSpeech.language = Locale("pt", "BR")
+            }
+        }
+    }
 
     override fun onStop() {
         super.onStop()
         btScanner!!.stopScan(leScanCallback)
+        handler?.removeCallbacks(textToSpeechRunnable)
+        handler = null
     }
 
+    private val textToSpeechRunnable = object : Runnable {
+        override fun run() {
+            // Execute the text-to-speech function
+            speakText()
+            // Post the same runnable after 10 seconds
+            handler?.postDelayed(this, 10000)
+        }
+    }
 
+    private fun speakText() {
+        textToSpeech.speak(distancia.text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
 
     //Configura los filtros de busqueda de dispositivos
     private fun bleFilters(): MutableList<ScanFilter> {
         val deviceName = "ESP32_BEACON"
-        //val deviceUUID = ParcelUuid.fromString("644F76F7-6A52-42BC-E911-FD902C9BB987")
         val scanFilters = mutableListOf<ScanFilter>()
         val scanFilter = ScanFilter.Builder().setDeviceName(deviceName).build()
-        //val scanFilter = ScanFilter.Builder().setServiceUuid(deviceUUID).build()
         scanFilters.add(scanFilter)
         return scanFilters
     }
@@ -166,33 +179,32 @@ class ScannerFragment : Fragment() {
                 beacon.macAddress=result.device.address
                 beacon.deviceName= result.device.name
                 beacon.rssi = result.rssi
-
                 rssiList.add(result.rssi)
                 val maxListSize = 10
+
                 if (rssiList.size > maxListSize) {
                     rssiList.removeAt(0)
                 }
 
                 beacon.lista=rssiList
-
                 val rssiAverage = rssiList.average().toInt()
-
                 beacon.rssiAverage = rssiAverage
                 beacon.distance= distanceCalculator(rssiAverage)
 
-                beaconSet.add(beacon)
+                if(result.device != null) {
+                    beaconSet.add(beacon)
+                    distancia.text = String.format(getString(R.string.distancia),beacon.distance)
+                }
+
+                else {
+                    beaconSet.clear()
+                    distancia.text = String.format(getString(R.string.noEncontrada))
+                }
 
                 (recyclerView.adapter as BeaconsAdapter).updateData(beaconSet.toList())
+
             }
-
-
-            distancia.text = String.format(getString(R.string.distancia),beacon.distance)
-
-            textToSpeech.speak(distancia.text, TextToSpeech.QUEUE_FLUSH, null, null)
-
-
         }
-
 
         //que hacer si el escaneo fallo
         override fun onScanFailed(errorCode: Int) {

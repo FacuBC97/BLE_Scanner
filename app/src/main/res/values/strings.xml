@@ -8,5 +8,6 @@
     <string name="rssiAverage">Average RSSI: %1$d dBm</string>
 
     <string name="distancia">Distância até a passadeira é de %.1f metros </string>
+    <string name="noEncontrada">A passadeira não foi encontrada </string>
 
 </resources>
